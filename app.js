@@ -1,7 +1,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/+esm';
 
+// Put your real URL and Key back in!
 const supabaseUrl = 'https://kodvkxihswertogolsza.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZHZreGloc3dlcnRvZ29sc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDY2NzgsImV4cCI6MjA5NjY4MjY3OH0.cqPL7TG15Y-TddONu7au1O_Apb6UI7zNXXpUvgQ28lk';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZHZreGloc3dlcnRvZ29sc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDY2NzgsImV4cCI6MjA5NjY4MjY3OH0.cqPL7TG15Y-TddONu7au1O_Apb6UI7zNXXpUvgQ28lk'; 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // DOM Elements
@@ -26,7 +27,7 @@ const ui = {
 let roomCode = '';
 let playerRole = ''; 
 let currentGameState = '';
-let countdownStarted = false; // Prevents double-triggering the countdown
+let countdownStarted = false;
 
 // Lobby Logic
 ui.btnCreate.addEventListener('click', async () => {
@@ -37,7 +38,7 @@ ui.btnCreate.addEventListener('click', async () => {
         .from('rooms')
         .insert([{ id: roomCode, p1: true, p2: false }]);
         
-    if (error) return showLobbyError("Error creating room.");
+    if (error) return showLobbyError("Connection failed.");
     
     window.addEventListener('beforeunload', () => {
         supabase.from('rooms').delete().eq('id', roomCode).then();
@@ -48,7 +49,7 @@ ui.btnCreate.addEventListener('click', async () => {
 
 ui.btnJoin.addEventListener('click', async () => {
     const code = ui.inputJoin.value;
-    if(code.length !== 4) return showLobbyError("Invalid code");
+    if(code.length !== 4) return showLobbyError("Invalid pin");
     
     const { data } = await supabase.from('rooms').select('*').eq('id', code).single();
         
@@ -70,7 +71,7 @@ function showLobbyError(msg) {
 function startGameUI() {
     ui.lobby.classList.add('hidden');
     ui.gameUi.classList.remove('hidden');
-    ui.roomDisplay.innerText = `Code: ${roomCode}`;
+    ui.roomDisplay.innerText = `PIN: ${roomCode}`;
     listenToRoom();
 }
 
@@ -100,34 +101,35 @@ async function syncGameState(data) {
     if (data.p1 && data.p2 && data.state === 'waiting') {
         countdownStarted = false;
         if (playerRole === 'p1') {
-            await supabase.from('rooms').update({ state: 'picking', p1_letter: '', p2_letter: '' }).eq('id', roomCode);
+            await supabase.from('rooms').update({ state: 'picking', p1_letter: '', p2_letter: '', winning_word: '' }).eq('id', roomCode);
         }
     }
 
-    // 2. PICKING PHASE (Both players pick a letter secretly)
+    // 2. PICKING PHASE
     if (data.state === 'picking') {
         const myLetter = playerRole === 'p1' ? data.p1_letter : data.p2_letter;
         
         if (myLetter) {
-            // I have picked, waiting for them
-            ui.statusText.innerText = "Waiting for partner...";
+            ui.statusText.innerText = "WAITING FOR THEM...";
             ui.wordInput.disabled = true;
             ui.btnSubmit.disabled = true;
-        } else {
-            // My turn to pick
-            ui.statusText.innerText = "Pick your letter!";
-            ui.letterDisplay.innerText = "?";
-            ui.letterDisplay.classList.remove('animate-pop');
-            ui.wordInput.disabled = false;
-            ui.wordInput.maxLength = 1;
+            ui.wordInput.placeholder = "WAITING...";
             ui.wordInput.value = '';
-            ui.wordInput.placeholder = "Type 1 letter...";
+        } else {
+            ui.statusText.innerText = "PICK A LETTER, DARLING!";
+            ui.letterDisplay.innerText = "♡";
+            ui.letterDisplay.classList.remove('animate-pop', 'text-4xl', 'text-retro-rose'); 
+            
+            ui.wordInput.disabled = false;
+            ui.wordInput.maxLength = 1; 
+            ui.wordInput.value = '';
+            ui.wordInput.placeholder = "TYPE 1 LETTER...";
+            
             ui.btnSubmit.disabled = false;
             ui.btnSubmit.innerText = "LOCK IN";
             if (document.activeElement !== ui.wordInput) ui.wordInput.focus();
         }
 
-        // If both have picked, Host starts countdown
         if (playerRole === 'p1' && data.p1_letter && data.p2_letter && !countdownStarted) {
             countdownStarted = true;
             startCountdown(data.p1_letter, data.p2_letter);
@@ -138,20 +140,22 @@ async function syncGameState(data) {
     if (data.state === 'countdown') {
         ui.wordInput.disabled = true;
         ui.btnSubmit.disabled = true;
-        ui.statusText.innerText = data.current_letter; // Reusing col for "3, 2, 1"
-        ui.letterDisplay.innerText = '';
+        ui.wordInput.placeholder = "GET READY...";
+        ui.statusText.innerText = "HERE WE GO...";
+        ui.letterDisplay.innerText = data.current_letter; 
     }
 
-    // 4. PLAYING PHASE (Race to type the word)
+    // 4. PLAYING PHASE 
     if (data.state === 'playing') {
-        ui.statusText.innerText = "TYPE A WORD!";
-        // Show the letters like "B ... G"
+        ui.statusText.innerText = "RACE TO TYPE!";
         ui.letterDisplay.innerText = `${data.current_letter[0]} ... ${data.current_letter[1]}`;
         ui.letterDisplay.classList.add('animate-pop');
         
         ui.wordInput.disabled = false;
         ui.wordInput.maxLength = 50; 
-        ui.wordInput.placeholder = "Type word here...";
+        ui.wordInput.value = '';
+        ui.wordInput.placeholder = "TYPE YOUR WORD...";
+        
         ui.btnSubmit.disabled = false;
         ui.btnSubmit.innerText = "SUBMIT";
         if (document.activeElement !== ui.wordInput) ui.wordInput.focus();
@@ -163,19 +167,28 @@ async function syncGameState(data) {
         ui.btnSubmit.disabled = true;
         
         const isWinner = data.winner === playerRole;
-        ui.statusText.innerText = isWinner ? "You Won!" : "Too Slow!";
+        ui.statusText.innerText = isWinner ? "YOU WON THIS ROUND!" : "TOO SLOW, LOVE!";
+        
+        // Safety Fallback: Ensure the app never crashes even if the word fails to save
+        const finalWord = data.winning_word ? data.winning_word.toUpperCase() : "ERROR";
+        
+        // Display the winning word for both players
+        ui.letterDisplay.innerText = finalWord;
+        ui.letterDisplay.classList.add('animate-pop', 'text-4xl'); 
+
         document.body.classList.add(isWinner ? 'flash-green' : 'flash-red');
         setTimeout(() => document.body.classList.remove('flash-green', 'flash-red'), 500);
 
-        if (playerRole === 'p1') setTimeout(() => advanceRound(data.round), 3000);
+        if (playerRole === 'p1') setTimeout(() => advanceRound(data.round), 4000);
     }
 
     // 6. FINISHED
     if (data.state === 'finished') {
         const youWon = (playerRole === 'p1' ? data.score_p1 : data.score_p2) > (playerRole === 'p1' ? data.score_p2 : data.score_p1);
         const tie = data.score_p1 === data.score_p2;
-        ui.statusText.innerText = tie ? "It's a Tie!" : (youWon ? "Match Winner! 🎉" : "Match Lost 💔");
-        ui.letterDisplay.innerText = "";
+        ui.statusText.innerText = tie ? "IT'S A TIE!" : (youWon ? "YOU ARE THE CHAMPION ♡" : "MATCH LOST 💔");
+        ui.letterDisplay.innerText = "END";
+        ui.letterDisplay.classList.remove('text-4xl');
     }
 }
 
@@ -184,7 +197,6 @@ async function startCountdown(l1, l2) {
         await supabase.from('rooms').update({ state: 'countdown', current_letter: i.toString() }).eq('id', roomCode);
         await new Promise(r => setTimeout(r, 1000));
     }
-    // Combine P1's letter and P2's letter into a single string "BG"
     const combined = l1 + l2;
     await supabase.from('rooms').update({ state: 'playing', current_letter: combined }).eq('id', roomCode);
 }
@@ -197,11 +209,11 @@ async function advanceRound(currentRound) {
     }
 }
 
-// Universal Submit Handler
-ui.btnSubmit.addEventListener('click', handleAction);
-ui.wordInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAction(); });
+// Universal Input Handler
+ui.btnSubmit.addEventListener('click', handleInput);
+ui.wordInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleInput(); });
 
-function handleAction() {
+function handleInput() {
     if (currentGameState === 'picking') {
         submitLetter();
     } else if (currentGameState === 'playing') {
@@ -211,6 +223,7 @@ function handleAction() {
 
 async function submitLetter() {
     const letter = ui.wordInput.value.trim().toUpperCase();
+    
     if (letter.length !== 1 || !/[A-Z]/.test(letter)) {
         ui.wordInput.classList.add('animate-pop');
         setTimeout(() => ui.wordInput.classList.remove('animate-pop'), 300);
@@ -226,42 +239,61 @@ async function submitLetter() {
 
 async function submitWord() {
     const word = ui.wordInput.value.trim().toLowerCase();
-    
-    // Get the two active letters from the UI text ("B ... G")
     const displayedText = ui.letterDisplay.innerText;
     const firstReq = displayedText.charAt(0).toLowerCase();
     const lastReq = displayedText.charAt(displayedText.length - 1).toLowerCase();
     
-    // VALIDATION: Must start with Letter 1 and end with Letter 2
+    // Check if the word starts and ends with the correct letters locally
     if (!word.startsWith(firstReq) || !word.endsWith(lastReq) || word.length < 2) {
         ui.wordInput.classList.add('animate-pop'); 
         setTimeout(() => ui.wordInput.classList.remove('animate-pop'), 300);
         return;
     }
 
+    // Lock UI while checking dictionary
     ui.wordInput.disabled = true;
     ui.btnSubmit.disabled = true;
+    ui.statusText.innerText = "CHECKING DICTIONARY...";
 
-    // Check if real word using Datamuse API
-    const res = await fetch(`https://api.datamuse.com/words?sp=${word}&max=1`);
-    const json = await res.json();
-    const isValid = json.length > 0 && json[0].word === word;
+    try {
+        // We now use the Stricter Free Dictionary API
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        
+        if (!res.ok) {
+            // A 404 response means the word does not exist in the dictionary
+            throw new Error("Invalid Word");
+        }
 
-    if (isValid) {
+        // If we reach this line, the word is officially valid!
         const { data } = await supabase.from('rooms').select('*').eq('id', roomCode).single();
+        
+        // Ensure the round hasn't already been won by the other player
         if (data.state === 'playing') {
             const scoreUpdate = playerRole === 'p1' 
                 ? { score_p1: data.score_p1 + 1 } 
                 : { score_p2: data.score_p2 + 1 };
                 
+            // Save the winning word directly into Supabase
             await supabase.from('rooms')
-                .update({ state: 'round_over', winner: playerRole, ...scoreUpdate })
+                .update({ state: 'round_over', winner: playerRole, winning_word: word, ...scoreUpdate })
                 .eq('id', roomCode);
         }
-    } else {
-        ui.wordInput.disabled = false;
-        ui.btnSubmit.disabled = false;
-        ui.wordInput.value = '';
-        ui.wordInput.focus();
+
+    } catch (err) {
+        // EXPLICIT REJECTION FEEDBACK
+        ui.statusText.innerText = "NOT IN DICTIONARY!";
+        ui.wordInput.classList.add('animate-pop');
+        ui.letterDisplay.classList.add('text-retro-rose'); // Turn the big letters red momentarily
+
+        // Reset the input box after a brief pause so they can try again
+        setTimeout(() => {
+            ui.wordInput.classList.remove('animate-pop');
+            ui.letterDisplay.classList.remove('text-retro-rose');
+            ui.statusText.innerText = "RACE TO TYPE!";
+            ui.wordInput.disabled = false;
+            ui.btnSubmit.disabled = false;
+            ui.wordInput.value = '';
+            ui.wordInput.focus();
+        }, 1500);
     }
 }

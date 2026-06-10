@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LETTERMATCH // 01</title>
+    <title>LetterMatch ♡</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
@@ -18,75 +18,72 @@
                         mono: ['"Space Mono"', 'monospace'],
                     },
                     colors: { 
-                        vintage: { 
-                            paper: '#EBE9E1', 
-                            ink: '#1C1C1C', 
-                            stamp: '#D63C2E', // Muted vintage red
-                            faded: '#8A8A8A'
+                        retro: { 
+                            cream: '#FDFBF7',   // Warm paper
+                            ink: '#2C363F',     // Soft black
+                            rose: '#E29587',    // Vintage pink
+                            mint: '#A5C8A4',    // Sage green
+                            sun: '#F2C14E',     // Mustard yellow
+                            faded: '#8D99A5'    // Muted blue-grey
                         } 
                     },
                     boxShadow: {
-                        'solid': '4px 4px 0px 0px #1C1C1C',
-                        'solid-sm': '2px 2px 0px 0px #1C1C1C',
+                        'solid': '3px 3px 0px 0px #2C363F',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-vintage-paper text-vintage-ink min-h-screen flex flex-col items-center justify-center p-4 font-mono antialiased select-none uppercase transition-colors duration-200">
+<body class="bg-retro-cream text-retro-ink min-h-screen flex flex-col items-center justify-center p-4 font-mono antialiased uppercase transition-colors duration-200 select-none">
 
-    <div id="lobby" class="w-full max-w-md border-2 border-vintage-ink bg-vintage-paper shadow-solid p-8 text-center transition-all">
-        <h1 class="text-4xl font-bold tracking-tighter mb-1 border-b-2 border-vintage-ink pb-4">LETTERMATCH</h1>
-        <p class="text-xs text-vintage-faded tracking-widest mt-4 mb-10">SYS.01 // RAPID WORD SYNC</p>
+    <div id="lobby" class="w-full max-w-md border-2 border-retro-ink bg-white shadow-solid p-8 text-center transition-all rounded-sm relative overflow-hidden">
         
-        <button id="btn-create" class="w-full bg-vintage-ink text-vintage-paper py-4 font-bold tracking-widest text-sm hover:bg-vintage-stamp active:translate-y-1 active:shadow-none shadow-solid transition-all mb-6">HOST CONNECTION</button>
+        <div class="absolute top-0 right-0 w-12 h-12 bg-retro-rose border-l-2 border-b-2 border-retro-ink -mr-6 -mt-6 rotate-45"></div>
+
+        <h1 class="text-3xl font-bold tracking-tighter mb-2 border-b-2 border-retro-ink pb-4">LETTERMATCH ♡</h1>
+        <p class="text-[11px] text-retro-faded tracking-widest mt-4 mb-8">VOL. 1 // A RAPID WORD GAME FOR TWO</p>
+        
+        <button id="btn-create" class="w-full bg-retro-sun text-retro-ink border-2 border-retro-ink py-4 font-bold tracking-widest text-sm hover:bg-white active:translate-y-1 active:shadow-none shadow-solid transition-all mb-6">START A NEW MATCH</button>
         
         <div class="flex items-center gap-4 my-6">
-            <hr class="flex-1 border-vintage-ink border-t-2">
-            <span class="text-vintage-ink text-xs font-bold tracking-widest">OR</span>
-            <hr class="flex-1 border-vintage-ink border-t-2">
+            <hr class="flex-1 border-retro-ink border-t-2">
+            <span class="text-retro-ink text-xs font-bold tracking-widest">OR</span>
+            <hr class="flex-1 border-retro-ink border-t-2">
         </div>
         
-        <input type="number" id="input-join" placeholder="ENTER 4-DIGIT CODE" class="w-full bg-transparent border-2 border-vintage-ink py-4 px-6 text-center text-lg font-bold tracking-widest mb-4 outline-none focus:bg-vintage-ink focus:text-vintage-paper transition-colors placeholder-vintage-faded">
-        <button id="btn-join" class="w-full border-2 border-vintage-ink text-vintage-ink py-4 font-bold tracking-widest text-sm hover:bg-vintage-ink hover:text-vintage-paper active:translate-y-1 active:shadow-none shadow-solid transition-all">JOIN CONNECTION</button>
+        <input type="number" id="input-join" placeholder="ENTER 4-DIGIT PIN" class="w-full bg-retro-cream border-2 border-retro-ink py-4 px-6 text-center text-lg font-bold tracking-widest mb-4 outline-none focus:bg-white transition-colors placeholder-retro-faded">
+        <button id="btn-join" class="w-full bg-retro-ink text-retro-cream border-2 border-retro-ink py-4 font-bold tracking-widest text-sm hover:bg-retro-faded active:translate-y-1 active:shadow-none shadow-solid transition-all">JOIN YOUR PARTNER</button>
         
-        <p id="lobby-msg" class="text-vintage-stamp mt-6 text-xs font-bold tracking-widest h-4"></p>
+        <p id="lobby-msg" class="text-retro-rose mt-6 text-xs font-bold tracking-widest h-4"></p>
     </div>
 
-    <div id="game-ui" class="hidden w-full max-w-md border-2 border-vintage-ink bg-vintage-paper shadow-solid p-6 flex flex-col h-[85vh] justify-between relative">
+    <div id="game-ui" class="hidden w-full max-w-md border-2 border-retro-ink bg-white shadow-solid p-6 flex flex-col h-[85vh] justify-between relative rounded-sm">
         
-        <div class="absolute top-0 left-4 w-[2px] h-full bg-vintage-ink opacity-10 pointer-events-none"></div>
-        <div class="absolute top-0 right-4 w-[2px] h-full bg-vintage-ink opacity-10 pointer-events-none"></div>
-
-        <div class="flex justify-between items-center border-b-2 border-vintage-ink pb-4 mb-4 z-10">
+        <div class="flex justify-between items-center border-b-2 border-retro-ink pb-4 mb-4 z-10">
             <div class="text-left w-1/3">
-                <p class="text-[10px] tracking-widest text-vintage-faded">P1.SCORE</p>
+                <p class="text-[10px] tracking-widest text-retro-rose font-bold">YOU</p>
                 <p id="score-you" class="text-3xl font-bold">0</p>
             </div>
-            <div class="text-center border-x-2 border-vintage-ink px-4 w-1/3">
-                <p class="text-[10px] tracking-widest text-vintage-faded">ROUND</p>
+            <div class="text-center border-x-2 border-retro-ink px-4 w-1/3">
+                <p class="text-[10px] tracking-widest text-retro-faded">ROUND</p>
                 <p id="round-display" class="text-lg font-bold">1/10</p>
-                <p id="room-display" class="text-[10px] tracking-widest mt-1">ID:----</p>
+                <p id="room-display" class="text-[9px] tracking-widest mt-1 text-retro-faded">PIN: ----</p>
             </div>
             <div class="text-right w-1/3">
-                <p class="text-[10px] tracking-widest text-vintage-faded">P2.SCORE</p>
+                <p class="text-[10px] tracking-widest text-retro-sun font-bold">THEM</p>
                 <p id="score-them" class="text-3xl font-bold">0</p>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center py-8 z-10">
-            <div id="status-text" class="text-sm tracking-widest font-bold mb-8 text-vintage-faded">AWAITING SIGNAL...</div>
-            <div id="letter-display" class="text-7xl font-bold tracking-tighter transition-transform scale-0 opacity-0 mb-4 h-24 flex items-center justify-center">?</div>
+            <div id="status-text" class="text-sm tracking-widest font-bold mb-8 text-retro-faded text-center">WAITING FOR YOUR SWEETHEART...</div>
+            <div id="letter-display" class="text-6xl font-bold tracking-tighter transition-transform scale-0 opacity-0 mb-4 h-24 flex items-center justify-center">?</div>
         </div>
 
-        <div class="mt-auto z-10">
-            <div id="keypad-area" class="hidden flex flex-wrap justify-center gap-1 mb-6"></div>
-
-            <div id="input-group">
-                <input type="text" id="word-input" autocomplete="off" autocorrect="off" spellcheck="false" onpaste="return false;" class="w-full bg-transparent border-2 border-vintage-ink py-4 px-6 text-center text-xl font-bold tracking-widest mb-4 outline-none disabled:opacity-30 focus:bg-vintage-ink focus:text-vintage-paper transition-colors" placeholder="INPUT WORD..." disabled>
-                <button id="btn-submit" class="w-full bg-vintage-ink text-vintage-paper border-2 border-vintage-ink py-4 font-bold tracking-widest text-sm hover:bg-vintage-paper hover:text-vintage-ink active:translate-y-1 active:shadow-none shadow-solid transition-all disabled:opacity-30 disabled:hover:bg-vintage-ink disabled:hover:text-vintage-paper disabled:active:translate-y-0 disabled:shadow-solid">SUBMIT</button>
-            </div>
+        <div class="mt-auto z-10 w-full">
+            <input type="text" id="word-input" autocomplete="off" autocorrect="off" spellcheck="false" onpaste="return false;" class="w-full bg-retro-cream border-2 border-retro-ink py-4 px-6 text-center text-xl font-bold tracking-widest mb-4 outline-none disabled:opacity-50 focus:bg-white transition-colors" placeholder="TYPE HERE..." disabled>
+            <button id="btn-submit" class="w-full bg-retro-ink text-retro-cream border-2 border-retro-ink py-4 font-bold tracking-widest text-sm hover:bg-white hover:text-retro-ink active:translate-y-1 active:shadow-none shadow-solid transition-all disabled:opacity-50 disabled:hover:bg-retro-ink disabled:hover:text-retro-cream disabled:active:translate-y-0 disabled:shadow-solid">SUBMIT</button>
         </div>
     </div>
 
