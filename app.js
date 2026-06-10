@@ -1,7 +1,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/+esm';
 
+// Put your real URL and Key back in!
 const supabaseUrl = 'https://kodvkxihswertogolsza.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZHZreGloc3dlcnRvZ29sc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDY2NzgsImV4cCI6MjA5NjY4MjY3OH0.cqPL7TG15Y-TddONu7au1O_Apb6UI7zNXXpUvgQ28lk';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZHZreGloc3dlcnRvZ29sc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDY2NzgsImV4cCI6MjA5NjY4MjY3OH0.cqPL7TG15Y-TddONu7au1O_Apb6UI7zNXXpUvgQ28lk'; 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // DOM Elements
@@ -19,14 +20,27 @@ const ui = {
     statusText: document.getElementById('status-text'),
     letterDisplay: document.getElementById('letter-display'),
     wordInput: document.getElementById('word-input'),
-    btnSubmit: document.getElementById('btn-submit')
+    btnSubmit: document.getElementById('btn-submit'),
+    keypadArea: document.getElementById('keypad-area'),
+    inputGroup: document.getElementById('input-group')
 };
 
 // Game State
 let roomCode = '';
 let playerRole = ''; 
 let currentGameState = '';
-let countdownStarted = false; // Prevents double-triggering the countdown
+let countdownStarted = false;
+
+// Generate Virtual Keypad on Load
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+LETTERS.split('').forEach(letter => {
+    const btn = document.createElement('button');
+    btn.innerText = letter;
+    // Styling for a cute, tappable mobile grid
+    btn.className = 'w-[12%] sm:w-[13%] aspect-square bg-gray-100 text-pastel-text font-black rounded-xl text-lg hover:bg-pastel-blue active:scale-90 transition shadow-sm';
+    btn.onclick = () => submitLetterFromKeypad(letter);
+    ui.keypadArea.appendChild(btn);
+});
 
 // Lobby Logic
 ui.btnCreate.addEventListener('click', async () => {
@@ -104,30 +118,31 @@ async function syncGameState(data) {
         }
     }
 
-    // 2. PICKING PHASE (Both players pick a letter secretly)
+    // 2. PICKING PHASE (Keypad Active)
     if (data.state === 'picking') {
         const myLetter = playerRole === 'p1' ? data.p1_letter : data.p2_letter;
         
         if (myLetter) {
             // I have picked, waiting for them
             ui.statusText.innerText = "Waiting for partner...";
+            ui.keypadArea.classList.add('hidden');
+            ui.inputGroup.classList.remove('hidden');
             ui.wordInput.disabled = true;
             ui.btnSubmit.disabled = true;
+            ui.wordInput.placeholder = "Waiting...";
         } else {
             // My turn to pick
-            ui.statusText.innerText = "Pick your letter!";
+            ui.statusText.innerText = "Tap a letter!";
             ui.letterDisplay.innerText = "?";
             ui.letterDisplay.classList.remove('animate-pop');
-            ui.wordInput.disabled = false;
-            ui.wordInput.maxLength = 1;
-            ui.wordInput.value = '';
-            ui.wordInput.placeholder = "Type 1 letter...";
-            ui.btnSubmit.disabled = false;
-            ui.btnSubmit.innerText = "LOCK IN";
-            if (document.activeElement !== ui.wordInput) ui.wordInput.focus();
+            
+            // Show Keypad, Hide Text Input
+            ui.keypadArea.classList.remove('hidden');
+            ui.keypadArea.classList.remove('opacity-50', 'pointer-events-none'); // Ensure it's clickable
+            ui.inputGroup.classList.add('hidden');
         }
 
-        // If both have picked, Host starts countdown
+        // Host starts countdown
         if (playerRole === 'p1' && data.p1_letter && data.p2_letter && !countdownStarted) {
             countdownStarted = true;
             startCountdown(data.p1_letter, data.p2_letter);
@@ -136,21 +151,26 @@ async function syncGameState(data) {
 
     // 3. COUNTDOWN PHASE
     if (data.state === 'countdown') {
+        ui.keypadArea.classList.add('hidden');
+        ui.inputGroup.classList.remove('hidden');
         ui.wordInput.disabled = true;
         ui.btnSubmit.disabled = true;
-        ui.statusText.innerText = data.current_letter; // Reusing col for "3, 2, 1"
+        ui.wordInput.placeholder = "Get ready...";
+        ui.statusText.innerText = data.current_letter; 
         ui.letterDisplay.innerText = '';
     }
 
-    // 4. PLAYING PHASE (Race to type the word)
+    // 4. PLAYING PHASE (Text Input Active)
     if (data.state === 'playing') {
+        ui.keypadArea.classList.add('hidden');
+        ui.inputGroup.classList.remove('hidden');
+        
         ui.statusText.innerText = "TYPE A WORD!";
-        // Show the letters like "B ... G"
         ui.letterDisplay.innerText = `${data.current_letter[0]} ... ${data.current_letter[1]}`;
         ui.letterDisplay.classList.add('animate-pop');
         
         ui.wordInput.disabled = false;
-        ui.wordInput.maxLength = 50; 
+        ui.wordInput.value = '';
         ui.wordInput.placeholder = "Type word here...";
         ui.btnSubmit.disabled = false;
         ui.btnSubmit.innerText = "SUBMIT";
@@ -184,7 +204,6 @@ async function startCountdown(l1, l2) {
         await supabase.from('rooms').update({ state: 'countdown', current_letter: i.toString() }).eq('id', roomCode);
         await new Promise(r => setTimeout(r, 1000));
     }
-    // Combine P1's letter and P2's letter into a single string "BG"
     const combined = l1 + l2;
     await supabase.from('rooms').update({ state: 'playing', current_letter: combined }).eq('id', roomCode);
 }
@@ -197,42 +216,27 @@ async function advanceRound(currentRound) {
     }
 }
 
-// Universal Submit Handler
-ui.btnSubmit.addEventListener('click', handleAction);
-ui.wordInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAction(); });
-
-function handleAction() {
-    if (currentGameState === 'picking') {
-        submitLetter();
-    } else if (currentGameState === 'playing') {
-        submitWord();
-    }
-}
-
-async function submitLetter() {
-    const letter = ui.wordInput.value.trim().toUpperCase();
-    if (letter.length !== 1 || !/[A-Z]/.test(letter)) {
-        ui.wordInput.classList.add('animate-pop');
-        setTimeout(() => ui.wordInput.classList.remove('animate-pop'), 300);
-        return;
-    }
-
-    ui.wordInput.disabled = true;
-    ui.btnSubmit.disabled = true;
+// New Keypad Submit Logic
+async function submitLetterFromKeypad(letter) {
+    // Instantly fade out the keypad to prevent spam clicking
+    ui.keypadArea.classList.add('opacity-50', 'pointer-events-none');
 
     const updateData = playerRole === 'p1' ? { p1_letter: letter } : { p2_letter: letter };
     await supabase.from('rooms').update(updateData).eq('id', roomCode);
 }
 
+// Existing Word Submit Logic
+ui.btnSubmit.addEventListener('click', submitWord);
+ui.wordInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') submitWord(); });
+
 async function submitWord() {
+    if (currentGameState !== 'playing') return;
+
     const word = ui.wordInput.value.trim().toLowerCase();
-    
-    // Get the two active letters from the UI text ("B ... G")
     const displayedText = ui.letterDisplay.innerText;
     const firstReq = displayedText.charAt(0).toLowerCase();
     const lastReq = displayedText.charAt(displayedText.length - 1).toLowerCase();
     
-    // VALIDATION: Must start with Letter 1 and end with Letter 2
     if (!word.startsWith(firstReq) || !word.endsWith(lastReq) || word.length < 2) {
         ui.wordInput.classList.add('animate-pop'); 
         setTimeout(() => ui.wordInput.classList.remove('animate-pop'), 300);
@@ -242,7 +246,6 @@ async function submitWord() {
     ui.wordInput.disabled = true;
     ui.btnSubmit.disabled = true;
 
-    // Check if real word using Datamuse API
     const res = await fetch(`https://api.datamuse.com/words?sp=${word}&max=1`);
     const json = await res.json();
     const isValid = json.length > 0 && json[0].word === word;
