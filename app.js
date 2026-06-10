@@ -5,7 +5,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = window.ENV?.SUPABASE_URL || '';
 const supabaseKey = window.ENV?.SUPABASE_ANON_KEY || '';
 
-const supabase = superClass.createClient(supabaseUrl, supabaseKey); // Your existing initialization
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // DOM Elements
 const ui = {
