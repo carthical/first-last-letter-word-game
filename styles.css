@@ -1,19 +1,46 @@
-@keyframes popIn {
-    0% { transform: scale(0); opacity: 0; }
-    80% { transform: scale(1.2); opacity: 1; }
+/* Mechanical, snappy pop animation */
+@keyframes mechanicalPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
 }
 
 .animate-pop {
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: mechanicalPop 0.15s ease-out forwards;
 }
 
+/* Instead of changing colors in JS, we redefine the classes app.js 
+  already uses to fit the new vintage theme.
+*/
+
+/* Win Flash: Invert the whole screen to dark ink */
 .flash-green {
-    background-color: #dcfce7 !important;
-    transition: background-color 0.1s ease-in-out;
+    background-color: #1C1C1C !important;
+    color: #EBE9E1 !important;
+    transition: background-color 0.05s linear;
 }
 
+/* Lose Flash: Flash the vintage red stamp color */
 .flash-red {
-    background-color: #fee2e2 !important;
-    transition: background-color 0.1s ease-in-out;
+    background-color: #D63C2E !important;
+    color: #EBE9E1 !important;
+    transition: background-color 0.05s linear;
+}
+
+/* Custom Keypad Button Styling injected dynamically by JS */
+#keypad-area button {
+    border: 1px solid #1C1C1C;
+    background-color: transparent;
+    color: #1C1C1C;
+    box-shadow: 2px 2px 0px 0px #1C1C1C;
+}
+
+#keypad-area button:hover {
+    background-color: #1C1C1C;
+    color: #EBE9E1;
+}
+
+#keypad-area button:active {
+    transform: translateY(2px);
+    box-shadow: none;
 }
