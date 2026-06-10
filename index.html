@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LetterMatch 💌</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { pastel: { pink: '#ffe4e6', blue: '#e0f2fe', green: '#dcfce7', text: '#4c1d95' } }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pastel-pink text-pastel-text min-h-screen flex flex-col items-center justify-center p-4 font-sans antialiased select-none">
+
+    <div id="lobby" class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 text-center transition-all">
+        <h1 class="text-4xl font-bold mb-2">LetterMatch 💌</h1>
+        <p class="text-sm text-gray-500 mb-8">The couple's rapid word game.</p>
+        
+        <button id="btn-create" class="w-full bg-pastel-text text-white rounded-full py-4 font-bold text-lg mb-4 hover:opacity-90 active:scale-95 transition">Create Room</button>
+        
+        <div class="flex items-center gap-2 my-4">
+            <hr class="flex-1 border-gray-200">
+            <span class="text-gray-400 text-sm">OR</span>
+            <hr class="flex-1 border-gray-200">
+        </div>
+        
+        <input type="number" id="input-join" placeholder="Enter 4-digit code" class="w-full bg-gray-100 rounded-full py-4 px-6 text-center text-lg font-bold tracking-widest mb-4 outline-none focus:ring-2 ring-pastel-text">
+        <button id="btn-join" class="w-full border-2 border-pastel-text text-pastel-text rounded-full py-4 font-bold text-lg hover:bg-pastel-blue active:scale-95 transition">Join Room</button>
+        
+        <p id="lobby-msg" class="text-red-500 mt-4 text-sm font-semibold h-4"></p>
+    </div>
+
+    <div id="game-ui" class="hidden w-full max-w-md bg-white rounded-3xl shadow-xl p-6 text-center flex flex-col h-[80vh] justify-between">
+        <div class="flex justify-between items-center bg-pastel-blue rounded-2xl p-4">
+            <div class="text-left">
+                <p class="text-xs font-bold text-gray-500">YOU</p>
+                <p id="score-you" class="text-2xl font-black text-pastel-text">0</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs font-bold text-gray-500">ROUND</p>
+                <p id="round-display" class="text-xl font-bold">1/10</p>
+                <p id="room-display" class="text-xs text-gray-400 mt-1">Code: ----</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-500">THEM</p>
+                <p id="score-them" class="text-2xl font-black text-pastel-text">0</p>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center py-8">
+            <div id="status-text" class="text-2xl font-bold mb-4">Waiting for partner...</div>
+            <div id="letter-display" class="text-8xl font-black text-pastel-text transition-transform scale-0 opacity-0 mb-4 h-24 flex items-center justify-center">?</div>
+            <div id="timer-bar" class="w-full bg-gray-200 h-2 rounded-full hidden overflow-hidden"><div id="timer-fill" class="h-full bg-pastel-text w-full transition-all duration-1000 linear"></div></div>
+        </div>
+
+        <div class="mt-auto">
+            <input type="text" id="word-input" autocomplete="off" autocorrect="off" spellcheck="false" onpaste="return false;" class="w-full bg-gray-100 rounded-2xl py-4 px-6 text-center text-xl font-bold mb-3 outline-none disabled:opacity-50" placeholder="Type word here..." disabled>
+            <button id="btn-submit" class="w-full bg-pastel-text text-white rounded-2xl py-4 font-bold text-xl hover:opacity-90 active:scale-95 transition disabled:opacity-50" disabled>SUBMIT</button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
