@@ -2,8 +2,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // 1. REPLACE WITH YOUR SUPABASE URL AND ANON KEY
 // Read keys from the globally injected config object
-const supabaseUrl = window.ENV?.SUPABASE_URL || '';
-const supabaseKey = window.ENV?.SUPABASE_ANON_KEY || '';
+const supabaseUrl = 'https://kodvkxihswertogolsza.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZHZreGloc3dlcnRvZ29sc3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMDY2NzgsImV4cCI6MjA5NjY4MjY3OH0.cqPL7TG15Y-TddONu7au1O_Apb6UI7zNXXpUvgQ28lk';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
